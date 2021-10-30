@@ -2,7 +2,6 @@ import binascii
 import calendar
 import datetime
 import os
-import sys
 import tarfile
 from http.client import HTTPSConnection
 from io import BytesIO
@@ -127,7 +126,7 @@ class H:
 
 
 def main():
-    _, bd_csv, user, sec, title, t = sys.argv
+    bd_csv, user, sec, title, t = (os.environ.get(k) for k in ('B', 'U', 'S', 'T', 'Z'))
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=int(t))
     h1p = list(range(0x21, 0x30))
     shuffle(h1p)

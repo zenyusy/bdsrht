@@ -91,7 +91,6 @@ def get_tgz(content: str) -> bytes:
     return r
 
 
-# curl -Fcontent=@s.tar.gz --oauth2-bearer 's' https://pages.sr.ht/publish/user.srht.site
 # http
 class H:
     D = b'--'
@@ -99,28 +98,36 @@ class H:
     MIME = b'multipart/form-data; boundary=' + BOD
 
     @classmethod
-    def get_body(cls, b: bytes) -> bytes:
-        return b'\r\n'.join([
-            b'%s%s' % (cls.D, cls.BOD),
-            b'Content-Disposition: form-data; name="content"; filename="s.tar.gz"',
-            b'Content-Type: application/x-tar',
-            b'',
-            b,
-            b'%s%s%s' % (cls.D, cls.BOD, cls.D),
-            b''])
+    def get_body(cls, files) -> bytes:
+        # `byteA + byteB` faster than `b'%s%s' % (A, B)`
+        dbod = cls.D + cls.BOD
+
+        l = []
+        # k-v: `for k, v in fields:`
+        for name, fname, contype, con in files:
+            l.extend([
+                dbod,
+                # k-v: remove '; filename=...'
+                b'Content-Disposition: form-data; name="' + name + b'"; filename="' + fname + b'"',
+                # k-v: remove the line
+                b'Content-Type: ' + contype, # or infer fname
+                b'',
+                con])
+        l.extend([dbod + cls.D, b''])
+        return b'\r\n'.join(l)
 
     @classmethod
-    def post(cls, tar: bytes, user: str, s: str):
-        b = cls.get_body(tar)
+    def post(cls, user: str, s: str, *files: Tuple[bytes, bytes, bytes, bytes]):
+        body = cls.get_body(files)
         h = HTTPSConnection('pages.sr.ht')
         h.request(
             'POST',
             f'/publish/{user}.srht.site',
-            b,
+            body,
             {
                 "Authorization": f"Bearer {s}",
                 'content-type': cls.MIME.decode(),
-                'content-length': str(len(b)),
+                'content-length': str(len(body)),
             })
         h.getresponse()
 
@@ -130,10 +137,11 @@ def main():
     now = datetime.datetime.utcnow() + datetime.timedelta(hours=int(t))
     h1p = list(range(0x21, 0x30))
     shuffle(h1p)
-    H.post(get_tgz(
+    # curl -Fcontent=@s.tar.gz --oauth2-bearer sec https://pages.sr.ht/publish/user.srht.site
+    H.post(user, sec, (b'content', b's.tar.gz', b'application/x-tar', get_tgz(
         h_index(bd_csv.split(','),
-                now.replace(minute=0, second=0, microsecond=0),
-                title, chr(h1p[0]), chr(h1p[1]))), user, sec)
+            now.replace(minute=0, second=0, microsecond=0),
+            title, chr(h1p[0]), chr(h1p[1])))))
 
 if __name__ == '__main__':
     main()

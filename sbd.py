@@ -113,8 +113,7 @@ class H:
                 b'Content-Type: ' + contype, # or infer fname
                 b'',
                 con])
-        l.extend([dbod + cls.D, b''])
-        return b'\r\n'.join(l)
+        return b'\r\n'.join(l + [dbod + cls.D, b'']) # faster than `extend`
 
     @classmethod
     def post(cls, user: str, s: str, *files: Tuple[bytes, bytes, bytes, bytes]):

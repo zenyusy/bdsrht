@@ -1,1 +1,8 @@
 calc bday, mem tar, form post
+
+---
+
+if datetime in bussiness logic is in one timezone, then the tz info can be ignored in the logic layer.
+you need to attend to the input/output datetime (e.g. "now", "a given day") and tune it to be in the
+"bussiness timezone" (e.g. utcnow + delta).
+do separate values for external interaction (e.g. as func args) and internal computation.

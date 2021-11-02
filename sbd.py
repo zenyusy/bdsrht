@@ -40,6 +40,7 @@ def get_q(m: int, d: int, now: datetime.datetime) -> str:
     if bd.day == now.day and bd.year == now.year and bd.month == now.month:
         return 'HAPPY BIRTHDAY!'
     return f'{gap_str(bd - now)} until your birthday ({bd.strftime("%Y-%m-%d")})'
+    # datetime.now().strftime('%Y%m%d') faster than date.today().strftime('%Y%m%d')
 
 
 def pq(mmdd: str, now: datetime.datetime) -> Tuple[str, str, str]:
